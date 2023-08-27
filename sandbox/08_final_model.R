@@ -1,5 +1,6 @@
 library(faraway)
 library(betareg)
+library(StepBeta)
 colours = c('green3','blueviolet','red', 'blue','magenta','orange3','purple','lavender','salmon','mediumturquoise')
 setwd("D:/projects/Crash-Stats-Vic-data")
 
@@ -54,6 +55,7 @@ betam = betareg(
 
 # doesnt change anything
 betam <- StepBeta(betam)
+betam$formula
 
 # revert back to intial plot
 betam_Ambulance = betareg(
