@@ -1,3 +1,4 @@
+@@ -0,0 +1,150 @@
 library(faraway)
 colours = c('green3','blueviolet','red', 'blue','magenta','orange3','purple','lavender','salmon','mediumturquoise')
 setwd("D:/projects/Crash-Stats-Vic-data")
@@ -147,4 +148,3 @@ Prediction = predict(poism, newdata = data_test, type = "response")
 par(mfrow=c(1,2))
 plot(Prediction ~ Police, data_test, col = sample(colours, 1))
 sqrt(mean((pred - data_test$Police)^2))
-
