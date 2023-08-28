@@ -94,7 +94,7 @@ with(data_train, interaction.plot(Sky, Part.of.Day, Police, col = colours))
 #leaves only the poisson distribution
 #inital plot
 poism = glm(
-  Police ~ Region + (Day.of.the.Week + Part.of.Day + Sky)^2,
+  Police + 1 ~ (Region + Day.of.the.Week + Part.of.Day + Sky)^2,
   family = poisson(link = "log"),
   data = data_train
 )
@@ -115,7 +115,7 @@ summary(poism)
 
 #using backwards selection to remove insig ones
 poism = back_selection(
-  "Police ~ Region + (Day.of.the.Week + Part.of.Day + Sky)^2",
+  "Police + 1 ~ (Region + Day.of.the.Week + Part.of.Day + Sky)^2",
   family = quasipoisson(link = "log"),
   data = data_train,
   sig_level = 0.05
@@ -141,9 +141,10 @@ halfnorm(cooks.distance(poism), ylab="cooks dist", col = c('orange3'))
 
 # predicting test values
 # predict police incidents for data_test
-Prediction = predict(poism, newdata = data_test, type = "response")
+Prediction = predict(poism, newdata = data_test, type = "response") - 1
 
 
 par(mfrow=c(1,2))
 plot(Prediction ~ Police, data_test, col = sample(colours, 1))
 sqrt(mean((Prediction - data_test$Police)^2))
+
