@@ -55,7 +55,6 @@ back_selection <- function(base_formula, family, data, test = "F", sig_level = 0
 }
 
 
-
 data_train <- read.csv(file ="data/clean/train_region.csv", header=TRUE)
 data_test <- read.csv(file ="data/clean/test_region.csv", header=TRUE)
 data_train
@@ -80,10 +79,10 @@ plot(log(Police) ~ log(Ambulance), data_train, col = colours[2])
 
 
 par(mfrow=c(2, 2)) 
-plot(Police ~ Part.of.Day, data_train, col = colours)
-plot(Police ~ Day.of.the.Week, data_train, col = colours)
-plot(Police ~ Region, data_train, col = colours)
-plot(Police ~ Sky, data_train, col = colours)
+plot(Ambulance ~ Part.of.Day, data_train, col = colours)
+plot(Ambulance ~ Day.of.the.Week, data_train, col = colours)
+plot(Ambulance ~ Region, data_train, col = colours)
+plot(Ambulance ~ Sky, data_train, col = colours)
 
 # plotting interaction
 par(mfrow=c(2,3))
@@ -100,7 +99,7 @@ with(data_train, interaction.plot(Region, Sky, Ambulance, col = colours))
 #inital plot
 poism = glm(
   Police + 1 ~ (Region + Day.of.the.Week + Part.of.Day + Sky)^2,
-  family = poisson(link = "log"),
+  family = quasipoisson(link = "log"),
   data = data_train
 )
 
