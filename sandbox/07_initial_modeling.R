@@ -57,7 +57,7 @@ back_selection <- function(base_formula, family, data, test = "F", sig_level = 0
 
 
 data_train <- read.csv(file ="data/clean/train_region.csv", header=TRUE)
-data_test <- read.csv(file ="data/clean/train_region.csv", header=TRUE)
+data_test <- read.csv(file ="data/clean/test_region.csv", header=TRUE)
 data_train
 
 
