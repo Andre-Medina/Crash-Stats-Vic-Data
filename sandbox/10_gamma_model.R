@@ -155,14 +155,14 @@ ppx = (gammam_police$y) - epsilon
 par(mfrow=c(1,2))
 plot(
    ppy ~ ppx, 
-  col = 'red',
+  col = 'blue',
   xlab = "Training True Police", 
   ylab = "Predicted")
 abline (a = 0, b = 1) 
 sqrt(mean((ppy - ppx)^2))
 plot(police_predicted ~ Police, 
      data_test, 
-     col = 'darkred',
+     col = 'darkblue',
      xlab = "Testing True Police", 
      ylab = "Predicted"
 )
@@ -170,7 +170,7 @@ abline (a = 0, b = 1)
 sqrt(mean((police_predicted - data_test$Police)^2))
 
 # predicting ambulance data
-abulance_predicted = predict(gammam_police, newdata = data_test, type = "response") - epsilon
+abulance_predicted = predict(gammam_ambulance, newdata = data_test, type = "response") - epsilon
 data_test$abulance_predicted = abulance_predicted
 
 pay = (gammam_ambulance$fitted.values - epsilon)
@@ -179,14 +179,14 @@ pax = (gammam_ambulance$y - epsilon)
 par(mfrow=c(1,2))
 plot(
   pay ~ pax, 
-  col = 'blue',
+  col = 'red',
   xlab = "Training True Ambulance", 
   ylab = "Predicted")
 abline (a = 0, b = 1) 
 sqrt(mean((pay - pax)^2))
 plot(abulance_predicted ~ Ambulance, 
      data_test, 
-     col = 'darkblue',
+     col = 'darkred',
      xlab = "Testing True Ambulance", 
      ylab = "Predicted")
 abline (a = 0, b = 1) 
@@ -194,8 +194,8 @@ sqrt(mean((abulance_predicted - data_test$Ambulance)^2))
 
 
 
-head(data_test[order(data_test$Ambulance, decreasing = TRUE),], n = 3)
-head(data_test[order(abulance_predicted, decreasing = TRUE),], n = 3)
+head(data_test[order(data_test$Ambulance, decreasing = TRUE),], n = 5)
+head(data_test[order(abulance_predicted, decreasing = TRUE),], n = 5)
 
 summary(gammam)
 # analysis
