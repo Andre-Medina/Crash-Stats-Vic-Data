@@ -1,5 +1,5 @@
 library(faraway)
-colours = c('green3','blueviolet','red', 'blue','magenta','orange3','purple','lavender','salmon','mediumturquoise')
+colours = c('royalblue','red','skyblue3','red2','blue','darkred','darkcyan','orange3','purple','lavender','salmon','mediumturquoise')
 setwd("D:/projects/Crash-Stats-Vic-data")
 
 #backwards selection formula
@@ -44,20 +44,19 @@ back_selection <- function(base_formula, family, data, test = "F", sig_level = 0
     #  to_remove = c(to_remove, removing)
     #}
     
-    print(cat('removing: ',removing))
     
     if(highest_pr < sig_level){
       print(cat('breaking, highest pr is: ', highest_pr))
       break
     } 
+    print(cat('removing: ',removing, highest_pr))
   }
   return(model)
 }
 
 
-
 data_train <- read.csv(file ="data/clean/train_region.csv", header=TRUE)
-data_test <- read.csv(file ="data/clean/train_region.csv", header=TRUE)
+data_test <- read.csv(file ="data/clean/test_region.csv", header=TRUE)
 data_train
 
 
@@ -70,32 +69,37 @@ data_train
 data_train$Police = data_train$Police
 
 par(mfrow=c(1,2))
-plot(Police ~ Ambulance, data_train, col = sample(colours, 1))
+plot(Police ~ Ambulance, data_train, col = colours[1])
 # add a line of best fit to the plot
 model <- lm(Police ~ 0 + Ambulance, data_train)
 abline(model)
 summary(model)
 confint(model, level = 0.95)
-plot(log(Police) ~ log(Ambulance), data_train, col = sample(colours, 1))
+plot(log(Police) ~ log(Ambulance), data_train, col = colours[2])
 
 
 par(mfrow=c(2, 2)) 
-plot(Police ~ Part.of.Day, data_train, col = sample(colours))
-plot(Police ~ Day.of.the.Week, data_train, col = sample(colours))
-plot(Police ~ Region, data_train, col = sample(colours))
-plot(Police ~ Sky, data_train, col = sample(colours))
+plot(Ambulance ~ Part.of.Day, data_train, col = colours)
+plot(Ambulance ~ Day.of.the.Week, data_train, col = colours)
+plot(Ambulance ~ Region, data_train, col = colours)
+plot(Ambulance ~ Sky, data_train, col = colours)
 
-par(mfrow=c(1,3))
-with(data_train, interaction.plot(Day.of.the.Week, Part.of.Day, Police, col = colours))
-with(data_train, interaction.plot(Day.of.the.Week, Sky, Police, col = colours))
-with(data_train, interaction.plot(Sky, Part.of.Day, Police, col = colours))
+# plotting interaction
+par(mfrow=c(2,3))
+with(data_train, interaction.plot(Day.of.the.Week, Part.of.Day, Ambulance, col = colours))
+with(data_train, interaction.plot(Day.of.the.Week, Sky, Ambulance, col = colours))
+with(data_train, interaction.plot(Sky, Part.of.Day, Ambulance, col = colours))
+with(data_train, interaction.plot(Region, Day.of.the.Week, Ambulance, col = colours))
+with(data_train, interaction.plot(Region, Part.of.Day, Ambulance, col = colours))
+with(data_train, interaction.plot(Region, Sky, Ambulance, col = colours))
+
 
 
 #leaves only the poisson distribution
 #inital plot
 poism = glm(
-  Police ~ Region + (Day.of.the.Week + Part.of.Day + Sky)^2,
-  family = poisson(link = "log"),
+  Police + 1 ~ (Region + Day.of.the.Week + Part.of.Day + Sky)^2,
+  family = quasipoisson(link = "log"),
   data = data_train
 )
 
@@ -115,12 +119,30 @@ summary(poism)
 
 #using backwards selection to remove insig ones
 poism = back_selection(
-  "Police ~ Region + (Day.of.the.Week + Part.of.Day + Sky)^2",
+  "Police + 1 ~ (Region + Day.of.the.Week + Part.of.Day + Sky)^2",
   family = quasipoisson(link = "log"),
   data = data_train,
   sig_level = 0.05
 )
 
+
+poism$formula
+summary(poism)
+
+
+poism_police = glm(
+  Police + 1 ~ (Region + Day.of.the.Week + Part.of.Day + Sky)^2 - 
+    Region:Day.of.the.Week,
+  family = quasipoisson(link = "log"),
+  data = data_train
+)
+
+poism_ambulance = glm(
+  Ambulance + 1 ~ (Region + Day.of.the.Week + Part.of.Day + Sky)^2 - 
+    Region:Day.of.the.Week,
+  family = quasipoisson(link = "log"),
+  data = data_train
+)
 
 summary(poism)
 
@@ -132,18 +154,89 @@ summary(poism)$dispersion
 
 
 par(mfrow=c(2,2))
-plot(predict(poism), residuals(poism), col = c('green3'))
-halfnorm(residuals(poism), ylab="residuals", col = colours)
-halfnorm(rstudent(poism), ylab="jackknife resid", col = c('salmon'))
-halfnorm(cooks.distance(poism), ylab="cooks dist", col = c('orange3'))
+halfnorm(residuals(poism_police), ylab="residuals", col = colours, main = 'Residuals half-norm')
+halfnorm(rstudent(poism_police), ylab="jackknife residuals", , main = 'Jackknife residuals')
+plot(poism, which = 1)
+halfnorm(cooks.distance(poism_police), ylab="cooks dist", col = c('orange3') , main = 'Cooks distance')
 
 
 
 # predicting test values
 # predict police incidents for data_test
-Prediction = predict(poism, newdata = data_test, type = "response")
+police_predicted = predict(poism_police, newdata = data_test, type = "response") - 1
+data_test$police_predicted = police_predicted
 
-
+ppy = (poism_police$fitted.values - 1)
+ppx = (poism_police$y - 1)
+# plotting police data
+png('test.png', width = 2000, height = 1500)
 par(mfrow=c(1,2))
-plot(Prediction ~ Police, data_test, col = sample(colours, 1))
-sqrt(mean((Prediction - data_test$Police)^2))
+plot(
+   ppy ~ ppx, 
+  col = 'red',
+  xlab = "Training True Police", 
+  ylab = "Predicted",
+  pch = 19,
+  cex = 8,
+  cex.axis = 4,
+  cex.lab = 4)
+abline (a = 0, b = 1) 
+sqrt(mean((ppy - ppx)^2))
+plot(police_predicted ~ Police, 
+     data_test, 
+     col = 'darkred',
+     xlab = "Testing True Police", 
+     ylab = "Predicted",
+     pch = 19,
+     cex = 8,
+     cex.axis = 6,
+     cex.sub = 6)
+abline (a = 0, b = 1) 
+dev.off()
+sqrt(mean((police_predicted - data_test$Police)^2))
+
+# predicting ambulance data
+abulance_predicted = predict(poism_police, newdata = data_test, type = "response") - 1
+data_test$abulance_predicted = abulance_predicted
+
+pay = (poism_ambulance$fitted.values - 1)
+pax = (poism_ambulance$y - 1)
+# plotting ambulance data
+par(mfrow=c(1,2))
+plot(
+  pay ~ pax, 
+  col = 'blue',
+  xlab = "Training True Ambulance", 
+  ylab = "Predicted")
+abline (a = 0, b = 1) 
+sqrt(mean((pay - pax)^2))
+plot(abulance_predicted ~ Ambulance, 
+     data_test, 
+     col = 'darkblue',
+     xlab = "Testing True Ambulance", 
+     ylab = "Predicted")
+abline (a = 0, b = 1) 
+sqrt(mean((abulance_predicted - data_test$Ambulance)^2))
+
+
+
+head(data_test[order(data_test$Ambulance, decreasing = TRUE),], n = 3)
+head(data_test[order(abulance_predicted, decreasing = TRUE),], n = 3)
+
+
+# analysis
+# all with very high certainty
+# metropolitain areas greatly increase the chance of need an ambulance
+
+# evenigns and nights generally decreases
+# but sat and sunday night (so am firday and sat) are second only to the sky not being clear
+# mornings incrased chance, surprisingly monday morning didnt do much
+
+# it raining slightly increased the chance which a high certainty
+
+
+
+
+
+
+

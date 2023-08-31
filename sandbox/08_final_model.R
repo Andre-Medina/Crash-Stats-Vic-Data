@@ -7,7 +7,7 @@ setwd("D:/projects/Crash-Stats-Vic-data")
 
 # reading the files
 data_train <- read.csv(file ="data/clean/train_region.csv", header=TRUE)
-data_test <- read.csv(file ="data/clean/train_region.csv", header=TRUE)
+data_test <- read.csv(file ="data/clean/test_region.csv", header=TRUE)
 data_train
 
 data_train$Part.of.Day <- factor(data_train$Part.of.Day )
@@ -133,3 +133,6 @@ head(data_test[order(Prediction_Ambulance, decreasing = TRUE),], n = 3)
 # evenigns and nights generally decreases
 # but sat and sunday night (so am firday and sat) are second only to the sky not being clear
 # mornings incrased chance, surprisingly monday morning didnt do much
+
+
+
