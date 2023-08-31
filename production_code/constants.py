@@ -72,6 +72,8 @@ TEST_TRAIN_SPLIT_DATE = '2019/01/01'
 TEST_SPLIT_MAX_DATE = '2020/01/01'
 
 
+TRAINING_DATA_DIR = DATA_CLEAN_DIR + 'train.csv'
+TESTING_DATA_DIR = DATA_CLEAN_DIR + 'test.csv'
 
 #  █▀▀ █▀█ █   █▀█ █ █ █▀█   █▀ █▀▀ █ █ █▀▀ █▀▄▀█ █▀▀ 
 #  █▄▄ █▄█ █▄▄ █▄█ █▄█ █▀▄   ▄█ █▄▄ █▀█ ██▄ █ ▀ █ ██▄ 
