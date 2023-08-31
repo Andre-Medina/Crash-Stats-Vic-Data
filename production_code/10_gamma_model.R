@@ -221,9 +221,13 @@ plot(abulance_predicted ~ Ambulance,
 abline (a = 0, b = 1)      # Target line
 sqrt(mean((abulance_predicted - data_test$Ambulance)^2))    # RMSE
 
-# viewing top 5, ordering by true value, then ordering by training values
-head(data_test[order(data_test$Police, decreasing = TRUE),], n = 5)
-head(data_test[order(data_test$police_predicted, decreasing = TRUE),], n = 5)
+
+
+# more analysis
+
+# predicting points
+#predict(gammam_police, data_test[order(data_test$Police, decreasing = TRUE)[c(1,3)],c('Day.of.the.Week','Part.of.Day','Region','Sky')])
+
 
 summary(gammam)
 # analysis
@@ -238,6 +242,64 @@ summary(gammam)
 
 # Not clear in the evening increased risk quite a bit
 # Where as raining in the morning decreased risk
+
+
+
+
+
+
+
+# viewing top 5, ordering by true value, then ordering by training values
+head(data_test[order(data_test$Ambulance, decreasing = TRUE),], n = 5)
+head(data_test[order(data_test$police_predicted, decreasing = TRUE),], n = 5)
+
+# highest accident rows and conf level 
+highest_rows <- c(20,18)
+conf_level = 0.95
+
+# confidence interval for top 2 rows for ambulances
+# first predicting the values
+p<-predict(
+  gammam_ambulance, 
+  newdata = data_test[highest_rows,c('Day.of.the.Week','Part.of.Day','Region','Sky')],
+  interval = 'confidence',
+  level = conf_level, 
+  se.fit = TRUE
+  )
+# finding alpha from t dist
+z_alpha = qt(1-(1-conf_level)/2, gammam_ambulance$df.residual)
+# finding lower and upper bounds
+lwr = exp(p$fit - z_alpha * p$se.fit) - epsilon
+names(lwr) <- 'lwr'
+upr = exp(p$fit + z_alpha * p$se.fit) - epsilon
+names(upr) <- 'upr'
+# combining the fences
+conf = rbind(lwr,upr)
+colnames(conf) = highest_rows
+(ambulance_intervals <- conf)
+
+
+# confidence interval for top 2 rows for ambulances
+# first predicting the values
+p<-predict(
+  gammam_police, 
+  newdata = data_test[highest_rows,c('Day.of.the.Week','Part.of.Day','Region','Sky')],
+  interval = 'confidence',
+  level = conf_level, 
+  se.fit = TRUE
+)
+# finding alpha from t dist
+z_alpha = qt(1-(1-conf_level)/2, gammam_police$df.residual)
+# finding lower and upper bounds
+lwr = exp(p$fit - z_alpha * p$se.fit) - epsilon
+names(lwr) <- 'lwr'
+upr = exp(p$fit + z_alpha * p$se.fit) - epsilon
+names(upr) <- 'upr'
+# combining the fences
+conf = rbind(lwr,upr)
+colnames(conf) = highest_rows
+(ambulance_intervals <- conf)
+
 
 
 
